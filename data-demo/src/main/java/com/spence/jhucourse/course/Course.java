@@ -2,8 +2,13 @@ package com.spence.jhucourse.course;
 
 import java.util.Objects;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity
 public class Course {
 
+    @Id
     private int id;
     private String code;
     private String name;
