@@ -1,0 +1,29 @@
+----------------------------------------------------------------
+Thu Dec 21 02:19:42 EST 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018c-8b3e-8fb7-000002c4fa90 
+on database directory memory:C:\Users\spenc\ptri_dir\ptri\0ff458a3-d74c-4cfa-be93-46726996e822 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@33909752 
+Loaded from file:/C:/Users/spenc/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.1+12-LTS-29
+user.dir=C:\Users\spenc\ptri_dir\ptri
+os.name=Windows 11
+os.arch=amd64
+os.version=10.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Thu Dec 21 02:20:40 EST 2023:
+Shutting down instance a816c00e-018c-8b3e-8fb7-000002c4fa90 on database directory memory:C:\Users\spenc\ptri_dir\ptri\0ff458a3-d74c-4cfa-be93-46726996e822 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@33909752 
+----------------------------------------------------------------
+Thu Dec 21 02:20:41 EST 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance e66540fa-018c-8b3e-8fb7-000002c4fa90 
+on database directory memory:C:\Users\spenc\ptri_dir\ptri\e972388e-6307-4faa-8f43-61742cb50fa6 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@33909752 
+Loaded from file:/C:/Users/spenc/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.1+12-LTS-29
+user.dir=C:\Users\spenc\ptri_dir\ptri
+os.name=Windows 11
+os.arch=amd64
+os.version=10.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
