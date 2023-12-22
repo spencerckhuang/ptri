@@ -1,10 +1,10 @@
-package com.spence.ptribackend;
+package com.spence.datademo;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class PtriBackendApplicationTests {
+class DataDemoApplicationTests {
 
 	@Test
 	void contextLoads() {
