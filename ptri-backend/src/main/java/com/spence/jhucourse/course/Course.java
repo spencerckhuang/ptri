@@ -1,90 +1,69 @@
 package com.spence.jhucourse.course;
 
-import java.util.Objects;
+import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Course {
 
     @Id
-    private int id;
-    private String code;
-    private String name;
+    private String offeringName;
+    private String title;
+    private String description;
+    private String prerequisiteString; // get this first from raw api call
+
+    @OneToMany
+    private List<Course> prerequisiteFor; // later we process the above string and fill out this list
 
     public Course() {
+        this.offeringName = "";
+        this.title = "";
+        this.description = "";
+        this.prerequisiteString = "";
+        this.prerequisiteFor = null;
     }
 
-    public Course(int id, String code, String name) {
-        this.id = id;
-        this.code = code;
-        this.name = name;
+    public String getOfferingName() {
+        return this.offeringName;
     }
 
-    public Course(String code, String name) {
-        this.id = -1;
-        this.code = code;
-        this.name = name;
+    public void setOfferingName(String offeringName) {
+        this.offeringName = offeringName;
     }
 
-    public int getId() {
-        return this.id;
+    public String getTitle() {
+        return this.title;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getCode() {
-        return this.code;
+    public String getDescription() {
+        return this.description;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public String getName() {
-        return this.name;
+    public String getPrerequisiteString() {
+        return this.prerequisiteString;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPrerequisiteString(String prerequisiteString) {
+        this.prerequisiteString = prerequisiteString;
     }
 
-    public Course id(int id) {
-        setId(id);
-        return this;
+    public List<Course> getPrerequisiteFor() {
+        return this.prerequisiteFor;
     }
 
-    public Course code(String code) {
-        setCode(code);
-        return this;
-    }
-
-    public Course name(String name) {
-        setName(name);
-        return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == this)
-            return true;
-        if (!(o instanceof Course)) {
-            return false;
-        }
-        Course course = (Course) o;
-        return id == course.id && Objects.equals(code, course.code) && Objects.equals(name, course.name);
-    }
-
-    @Override
-    public String toString() {
-        return "{" +
-                " id='" + getId() + "'" +
-                ", code='" + getCode() + "'" +
-                ", name='" + getName() + "'" +
-                "}";
+    public void setPrerequisiteFor(List<Course> prerequisiteFor) {
+        this.prerequisiteFor = prerequisiteFor;
     }
 
 }

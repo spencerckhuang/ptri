@@ -1,10 +1,10 @@
 package com.spence.jhucourse.apicourse;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import reactor.core.publisher.Flux;
 
 @RestController
 @RequestMapping("/apicourse")
@@ -24,8 +24,9 @@ public class JHUApiCourseController {
 
     // need method to get data
     @RequestMapping("fetch-and-store-data")
-    public Flux<JHUApiCourse> makeApiCall() {
-        return jhuApiService.makeApiCall(API_KEY);
+    public List<JHUApiCourse> makeApiCall() {
+        // return jhuApiService.makeApiCall(API_KEY);
+        return null;
     }
 
 }
