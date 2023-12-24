@@ -17,6 +17,8 @@ public class Course {
 
     @Column(length = 2000)
     private String description;
+
+    @Column(length = 1000)
     private String prerequisiteString; // get this first from raw api call
 
     @OneToMany

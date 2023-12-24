@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -43,20 +42,21 @@ public class CourseService {
     }
 
     public List<Course> getAllCourses() { // Maybe connect this to JHUApiService instead
-        // List<Course> courses = new ArrayList<>();
-        // courseRepository.findAll().forEach(courses::add); // findAll() returns an
-        // iterator
-        // return courses
 
         Flux<JHUApiCourse> apiCourseFlux = jhuApiService.makeApiCall(API_KEY);
+        List<JHUApiCourse> apiCourses = apiCourseFlux.collectList().block();
 
-        Flux<Course> courseFlux = apiCourseFlux.flatMap(this::convertToCourse);
+        List<Course> courses = new ArrayList<>();
 
-        List<Course> courses = courseFlux.collectList().block();
+        for (JHUApiCourse apiCourse : apiCourses) {
+            if (apiCourse.getLevel().indexOf("Graduate") == -1 && apiCourse.getLevel().indexOf("Independent") == -1) {
+                System.out.println("ACCEPTED: " + apiCourse.getLevel());
+                courses.add(convertToCourse(apiCourse).block());
+            } else {
+                System.out.println("DENIED: " + apiCourse.getLevel());
+            }
 
-        // * Use regex pattern to parse prereq strings and map courses appropriately
-        // * All basic course info is saved in DB at this point. So just need to go
-        // * through one by one and update them.
+        }
 
         String pattern = "[A-Za-z]{2}\\.[0-9]{3}\\.[0-9]{3}";
         Pattern regex = Pattern.compile(pattern);
@@ -97,8 +97,8 @@ public class CourseService {
                 .buildAndExpand(codeAndSection, "Fall 2023");
 
         List<String> badKeyphrases = new ArrayList<>(
-                Arrays.asList("Students can only take", "Students may only receive credit for", "Students can take",
-                        "Students must have completed Lab Safety"));
+                Arrays.asList("Students can only", "Students may", "Students can take",
+                        "Students must have completed Lab Safety", "Credit may only be earned"));
 
         return webClient.get()
                 .uri(uriComponents.toUriString(), codeAndSection, "Fall 2023")
@@ -116,7 +116,7 @@ public class CourseService {
                                     .asText("");
                             course.setDescription(description);
                         } catch (NullPointerException e) {
-                            System.out.println("LOLXD");
+                            // System.out.println("LOLXD");
                         }
 
                         courseRepository.save(course);
@@ -132,7 +132,7 @@ public class CourseService {
                             course.setPrerequisiteString(prerequisites);
                             courseRepository.save(course);
                         } catch (NullPointerException e) {
-                            System.out.println("LOLXDXD");
+                            // System.out.println("LOLXDXD");
                         }
 
                     } catch (IOException e) {

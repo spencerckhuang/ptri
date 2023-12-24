@@ -28,8 +28,6 @@ public class JHUApiService {
                 .retrieve()
                 .bodyToFlux(JHUApiCourse.class);
 
-        System.out.println("RESPONSE: " + response.toString());
-
         return response;
     }
 
