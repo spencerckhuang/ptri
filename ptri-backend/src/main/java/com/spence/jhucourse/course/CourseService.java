@@ -4,8 +4,12 @@ import java.util.List;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -50,6 +54,29 @@ public class CourseService {
 
         List<Course> courses = courseFlux.collectList().block();
 
+        // * Use regex pattern to parse prereq strings and map courses appropriately
+        // * All basic course info is saved in DB at this point. So just need to go
+        // * through one by one and update them.
+
+        String pattern = "[A-Za-z]{2}\\.[0-9]{3}\\.[0-9]{3}";
+        Pattern regex = Pattern.compile(pattern);
+
+        for (Course course : courses) {
+
+            // * Now use regex to find actual prerequisites
+            Matcher matcher = regex.matcher(course.getPrerequisiteString());
+
+            while (matcher.find()) {
+                String match = matcher.group();
+                // * Find course with matching code and add to course prerequisiteFor List<>
+                Optional<Course> optionalCourse = courseRepository.findById(match);
+                if (optionalCourse.isPresent()) {
+                    course.getPrerequisiteFor().add(optionalCourse.get());
+                }
+            }
+
+        }
+
         return courses;
     }
 
@@ -69,6 +96,10 @@ public class CourseService {
                 .queryParam("key", API_KEY)
                 .buildAndExpand(codeAndSection, "Fall 2023");
 
+        List<String> badKeyphrases = new ArrayList<>(
+                Arrays.asList("Students can only take", "Students may only receive credit for", "Students can take",
+                        "Students must have completed Lab Safety"));
+
         return webClient.get()
                 .uri(uriComponents.toUriString(), codeAndSection, "Fall 2023")
                 .header("key", API_KEY)
@@ -83,13 +114,25 @@ public class CourseService {
                         try {
                             String description = jsonNode.get(0).get("SectionDetails").get(0).get("Description")
                                     .asText("");
-                            String prerequisites = jsonNode.get(0).get("SectionDetails").get(0).get("Prerequisites")
-                                    .get(0).get("Description").asText("");
-
                             course.setDescription(description);
-                            course.setPrerequisiteString(prerequisites);
                         } catch (NullPointerException e) {
-                            e.printStackTrace();
+                            System.out.println("LOLXD");
+                        }
+
+                        courseRepository.save(course);
+
+                        try {
+                            int prereqDescIndex = -1;
+                            String prerequisites;
+                            do {
+                                prereqDescIndex++;
+                                prerequisites = jsonNode.get(0).get("SectionDetails").get(0).get("Prerequisites")
+                                        .get(prereqDescIndex).get("Description").asText("");
+                            } while (startsWithAny(prerequisites, badKeyphrases));
+                            course.setPrerequisiteString(prerequisites);
+                            courseRepository.save(course);
+                        } catch (NullPointerException e) {
+                            System.out.println("LOLXDXD");
                         }
 
                     } catch (IOException e) {
@@ -99,6 +142,17 @@ public class CourseService {
                     return Mono.just(course);
                 });
 
+    }
+
+    // * Helper method that returns true if str starts with any string in prefixes.
+    // False otherwise.
+    private boolean startsWithAny(String str, List<String> prefixes) {
+        for (String pre : prefixes) {
+            if (str.startsWith(pre)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Course getCourse(String id) {

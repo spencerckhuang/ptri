@@ -1,7 +1,9 @@
 package com.spence.jhucourse.course;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -12,6 +14,8 @@ public class Course {
     @Id
     private String offeringName;
     private String title;
+
+    @Column(length = 2000)
     private String description;
     private String prerequisiteString; // get this first from raw api call
 
@@ -23,7 +27,7 @@ public class Course {
         this.title = "";
         this.description = "";
         this.prerequisiteString = "";
-        this.prerequisiteFor = null;
+        this.prerequisiteFor = new ArrayList<>();
     }
 
     public String getOfferingName() {
