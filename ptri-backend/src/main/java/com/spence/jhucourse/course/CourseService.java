@@ -1,10 +1,11 @@
 package com.spence.jhucourse.course;
 
 import java.util.List;
-
+import java.util.Map;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,17 +47,24 @@ public class CourseService {
         Flux<JHUApiCourse> apiCourseFlux = jhuApiService.makeApiCall(API_KEY);
         List<JHUApiCourse> apiCourses = apiCourseFlux.collectList().block();
 
-        List<Course> courses = new ArrayList<>();
+        Map<String, Course> uniqueCourses = new HashMap<>();
 
         for (JHUApiCourse apiCourse : apiCourses) {
             if (apiCourse.getLevel().indexOf("Graduate") == -1 && apiCourse.getLevel().indexOf("Independent") == -1) {
-                System.out.println("ACCEPTED: " + apiCourse.getLevel());
-                courses.add(convertToCourse(apiCourse).block());
+                if (!uniqueCourses.containsKey(apiCourse.getOfferingName())) {
+                    System.out.println("ACCEPTED: " + apiCourse.getLevel());
+                    uniqueCourses.put(apiCourse.getOfferingName(), convertToCourse(apiCourse).block());
+                } else {
+                    System.out.println("DENIED REPEAT: " + apiCourse.getLevel());
+                }
+
             } else {
-                System.out.println("DENIED: " + apiCourse.getLevel());
+                System.out.println("DENIED GRAD/INDPT: " + apiCourse.getLevel());
             }
 
         }
+
+        List<Course> courses = new ArrayList<>(uniqueCourses.values());
 
         String pattern = "[A-Za-z]{2}\\.[0-9]{3}\\.[0-9]{3}";
         Pattern regex = Pattern.compile(pattern);
