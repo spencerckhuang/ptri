@@ -42,7 +42,7 @@ public class CourseService {
         this.webClient = webClient;
     }
 
-    public List<Course> getAllCourses() { // Maybe connect this to JHUApiService instead
+    public void getAllCourses() { // Maybe connect this to JHUApiService instead
 
         Flux<JHUApiCourse> apiCourseFlux = jhuApiService.makeApiCall(API_KEY);
         List<JHUApiCourse> apiCourses = apiCourseFlux.collectList().block();
@@ -69,6 +69,8 @@ public class CourseService {
         String pattern = "[A-Za-z]{2}\\.[0-9]{3}\\.[0-9]{3}";
         Pattern regex = Pattern.compile(pattern);
 
+        System.out.println("STARTING MATCHING...");
+
         for (Course course : courses) {
 
             // * Now use regex to find actual prerequisites
@@ -76,22 +78,32 @@ public class CourseService {
 
             while (matcher.find()) {
                 String match = matcher.group();
+                System.out.println(course.getTitle() + " (" + course.getOfferingName() + "): Found " + match);
                 // * Find course with matching code and add to course prerequisiteFor List<>
                 Optional<Course> optionalCourse = courseRepository.findById(match);
                 if (optionalCourse.isPresent()) {
-                    course.getPrerequisiteFor().add(optionalCourse.get());
+                    course.getPrerequisiteFor().add(optionalCourse.get().getOfferingName());
+                    System.out.println("Added " + optionalCourse.get().getTitle() + " as a PR to " + course.getTitle());
                 } else {
                     // * Try to find other course, might not be in CS department
                     Course newCourse = getCourseInfo(match).block();
                     if (newCourse.getTitle() != "") {
-                        course.getPrerequisiteFor().add(newCourse);
+                        course.getPrerequisiteFor().add(newCourse.getOfferingName());
                     }
                 }
             }
 
+            try {
+                courseRepository.save(course);
+            } catch (Exception e) {
+                System.out.println("ERROR: " + e.getClass().getSimpleName() + ". Duplicate key (?): "
+                        + course.getOfferingName() + ", " + course.getTitle());
+            }
+
         }
 
-        return courses;
+        System.out.println("DONE MATCHING");
+
     }
 
     private Mono<Course> getCourseInfo(String codeAndSectionFull) {

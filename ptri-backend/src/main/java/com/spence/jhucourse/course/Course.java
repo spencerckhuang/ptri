@@ -21,8 +21,7 @@ public class Course {
     @Column(length = 1000)
     private String prerequisiteString; // get this first from raw api call
 
-    @OneToMany
-    private List<Course> prerequisiteFor; // later we process the above string and fill out this list
+    private List<String> prerequisiteFor; // later we process the above string and fill out this list
 
     public Course() {
         this.offeringName = "";
@@ -64,11 +63,11 @@ public class Course {
         this.prerequisiteString = prerequisiteString;
     }
 
-    public List<Course> getPrerequisiteFor() {
+    public List<String> getPrerequisiteFor() {
         return this.prerequisiteFor;
     }
 
-    public void setPrerequisiteFor(List<Course> prerequisiteFor) {
+    public void setPrerequisiteFor(List<String> prerequisiteFor) {
         this.prerequisiteFor = prerequisiteFor;
     }
 
