@@ -80,6 +80,12 @@ public class CourseService {
                 Optional<Course> optionalCourse = courseRepository.findById(match);
                 if (optionalCourse.isPresent()) {
                     course.getPrerequisiteFor().add(optionalCourse.get());
+                } else {
+                    // * Try to find other course, might not be in CS department
+                    Course newCourse = getCourseInfo(match).block();
+                    if (newCourse.getTitle() != "") {
+                        course.getPrerequisiteFor().add(newCourse);
+                    }
                 }
             }
 
@@ -88,16 +94,10 @@ public class CourseService {
         return courses;
     }
 
-    private Mono<Course> convertToCourse(JHUApiCourse apiCourse) {
+    private Mono<Course> getCourseInfo(String codeAndSectionFull) {
         Course course = new Course();
 
-        course.setOfferingName(apiCourse.getOfferingName());
-
-        // * Set course title
-        course.setTitle(apiCourse.getTitle());
-
-        // * Make another API call to:
-        String codeAndSection = apiCourse.getOfferingName().replace(".", "") + "01";
+        String codeAndSection = codeAndSectionFull.replace(".", "") + "01";
 
         UriComponents uriComponents = UriComponentsBuilder
                 .fromUriString("https://sis.jhu.edu/api/classes/{code}/{term}")
@@ -120,6 +120,14 @@ public class CourseService {
                         JsonNode jsonNode = objectMapper.readTree(responseBody);
 
                         try {
+                            course.setTitle(jsonNode.get(0).get("Title").asText(""));
+                        } catch (NullPointerException e) {
+                            System.out.println("ERROR: COURSE DOES NOT HAVE A TITLE: " + codeAndSectionFull);
+                        }
+
+                        course.setOfferingName(codeAndSectionFull);
+
+                        try {
                             String description = jsonNode.get(0).get("SectionDetails").get(0).get("Description")
                                     .asText("");
                             course.setDescription(description);
@@ -127,7 +135,9 @@ public class CourseService {
                             // System.out.println("LOLXD");
                         }
 
-                        courseRepository.save(course);
+                        if (course.getTitle() != "") {
+                            courseRepository.save(course);
+                        }
 
                         try {
                             int prereqDescIndex = -1;
@@ -143,13 +153,20 @@ public class CourseService {
                             // System.out.println("LOLXDXD");
                         }
 
+                        if (course.getTitle() != "") {
+                            courseRepository.save(course);
+                        }
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
                     return Mono.just(course);
                 });
+    }
 
+    private Mono<Course> convertToCourse(JHUApiCourse apiCourse) {
+        return getCourseInfo(apiCourse.getOfferingName());
     }
 
     // * Helper method that returns true if str starts with any string in prefixes.
