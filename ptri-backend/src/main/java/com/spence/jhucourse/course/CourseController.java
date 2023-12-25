@@ -1,6 +1,7 @@
 package com.spence.jhucourse.course;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,14 +15,24 @@ public class CourseController {
     @Autowired
     private CourseService courseService;
 
+    @Autowired
+    private CourseRepository courseRepository;
+
     @RequestMapping("/courses")
     public List<Course> getAllCourses() {
-        return courseService.getAllCourses();
+        List<Course> courses = new ArrayList<>();
+        courseRepository.findAll().forEach(courses::add);
+        return courses;
     }
 
     @RequestMapping("/courses/{id}")
-    public Course getCourse(@PathVariable String id) {
-        return courseService.getCourse(id);
+    public Course getCourse(@PathVariable String id) throws IllegalArgumentException {
+        if (id.length() != 8) {
+            throw new IllegalArgumentException("Course code too long!");
+        }
+
+        String courseCode = id.substring(0, 2) + "." + id.substring(2, 5) + "." + id.substring(5, 8);
+        return courseService.getCourse(courseCode);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/courses")
