@@ -1,0 +1,32 @@
+----------------------------------------------------------------
+Wed Dec 27 17:33:48 EST 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018c-ad69-99b7-000002c560f0 
+on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/e85cc32e-c8f2-4809-955d-d346f48e9935 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
+Loaded from file:/Users/spencerckhuang/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.1+12-LTS-29
+user.dir=/Users/spencerckhuang/ptri_dir/ptri
+os.name=Mac OS X
+os.arch=aarch64
+os.version=13.3.1
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Wed Dec 27 17:33:55 EST 2023:
+Shutting down instance a816c00e-018c-ad69-99b7-000002c560f0 on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/e85cc32e-c8f2-4809-955d-d346f48e9935 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
+----------------------------------------------------------------
+Wed Dec 27 17:33:56 EST 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance 2ded81a4-018c-ad69-99b7-000002c560f0 
+on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/c6bd0eea-d995-4e5d-bb3f-49faef472537 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
+Loaded from file:/Users/spencerckhuang/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.1+12-LTS-29
+user.dir=/Users/spencerckhuang/ptri_dir/ptri
+os.name=Mac OS X
+os.arch=aarch64
+os.version=13.3.1
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Wed Dec 27 17:34:43 EST 2023:
+Shutting down instance 2ded81a4-018c-ad69-99b7-000002c560f0 on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/c6bd0eea-d995-4e5d-bb3f-49faef472537 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 

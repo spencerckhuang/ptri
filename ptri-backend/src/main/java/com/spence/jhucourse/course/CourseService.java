@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spence.jhucourse.apicourse.JHUApiCourse;
 import com.spence.jhucourse.apicourse.JHUApiService;
+import com.spence.jhucourse.prereqlist.PrerequisiteList;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -66,32 +67,14 @@ public class CourseService {
 
         List<Course> courses = new ArrayList<>(uniqueCourses.values());
 
-        String pattern = "[A-Za-z]{2}\\.[0-9]{3}\\.[0-9]{3}";
-        Pattern regex = Pattern.compile(pattern);
+        // String pattern = "[A-Za-z]{2}\\.[0-9]{3}\\.[0-9]{3}";
+        // Pattern regex = Pattern.compile(pattern);
 
         System.out.println("STARTING MATCHING...");
 
         for (Course course : courses) {
 
-            // * Now use regex to find actual prerequisites
-            Matcher matcher = regex.matcher(course.getPrerequisiteString());
-
-            while (matcher.find()) {
-                String match = matcher.group();
-                System.out.println(course.getTitle() + " (" + course.getOfferingName() + "): Found " + match);
-                // * Find course with matching code and add to course prerequisiteFor List<>
-                Optional<Course> optionalCourse = courseRepository.findById(match);
-                if (optionalCourse.isPresent()) {
-                    course.getPrerequisiteFor().add(optionalCourse.get().getOfferingName());
-                    System.out.println("Added " + optionalCourse.get().getTitle() + " as a PR to " + course.getTitle());
-                } else {
-                    // * Try to find other course, might not be in CS department
-                    Course newCourse = getCourseInfo(match).block();
-                    if (newCourse.getTitle() != "") {
-                        course.getPrerequisiteFor().add(newCourse.getOfferingName());
-                    }
-                }
-            }
+            course.setPrerequisiteFor(new PrerequisiteList(course.getPrerequisiteString()));
 
             try {
                 courseRepository.save(course);
@@ -127,7 +110,6 @@ public class CourseService {
                 .bodyToMono(String.class)
                 .flatMap(responseBody -> {
                     try {
-                        // System.out.println("RESPONSE: " + responseBody);
                         ObjectMapper objectMapper = new ObjectMapper();
                         JsonNode jsonNode = objectMapper.readTree(responseBody);
 
@@ -162,7 +144,8 @@ public class CourseService {
                             course.setPrerequisiteString(prerequisites);
                             courseRepository.save(course);
                         } catch (NullPointerException e) {
-                            // System.out.println("LOLXDXD");
+                            course.setPrerequisiteString("");
+                            courseRepository.save(course);
                         }
 
                         if (course.getTitle() != "") {
