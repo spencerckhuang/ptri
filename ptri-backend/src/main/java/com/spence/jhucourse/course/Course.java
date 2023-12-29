@@ -1,13 +1,10 @@
 package com.spence.jhucourse.course;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.spence.jhucourse.prereqlist.PrerequisiteList;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 
 @Entity
 public class Course {
@@ -19,9 +16,10 @@ public class Course {
     @Column(length = 2000)
     private String description;
 
-    @Column(length = 1000)
+    @Column(length = 2000)
     private String prerequisiteString; // get this first from raw api call
 
+    @Transient
     private PrerequisiteList prerequisiteFor;
 
     public Course() {

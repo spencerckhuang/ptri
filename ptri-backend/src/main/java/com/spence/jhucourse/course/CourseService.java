@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spence.jhucourse.apicourse.JHUApiCourse;
 import com.spence.jhucourse.apicourse.JHUApiService;
-import com.spence.jhucourse.prereqlist.PrerequisiteList;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -67,21 +66,16 @@ public class CourseService {
 
         List<Course> courses = new ArrayList<>(uniqueCourses.values());
 
-        // String pattern = "[A-Za-z]{2}\\.[0-9]{3}\\.[0-9]{3}";
-        // Pattern regex = Pattern.compile(pattern);
-
         System.out.println("STARTING MATCHING...");
 
         for (Course course : courses) {
 
-            course.setPrerequisiteFor(new PrerequisiteList(course.getPrerequisiteString()));
+            String prereqString = course.getPrerequisiteString();
+            prereqString = "(" + prereqString + ")";
 
-            try {
-                courseRepository.save(course);
-            } catch (Exception e) {
-                System.out.println("ERROR: " + e.getClass().getSimpleName() + ". Duplicate key (?): "
-                        + course.getOfferingName() + ", " + course.getTitle());
-            }
+            course.setPrerequisiteFor(constructPrereqsFromString(prereqString));
+
+            courseRepository.save(course);
 
         }
 
@@ -174,6 +168,82 @@ public class CourseService {
         }
         return false;
     }
+
+    public PrerequisiteList constructPrereqsFromString (String prereqString) {
+        // * Base case: prereqString only represents one course
+        if (!prereqString.startsWith("(")) {
+            // This will return a "UNIT" PrerequisiteList
+            return new PrerequisiteList(prereqString);
+        }
+
+        // * Recursive case: prereqString represents multiple terms
+        PrerequisiteList ret = new PrerequisiteList();
+
+        // * Trim external parentheses off string and extra whitespace
+        prereqString = prereqString.substring(1, prereqString.length() - 1).trim();   
+
+        // * Get operator
+        int firstAND = prereqString.toUpperCase().indexOf(" AND ");
+        int firstOR = prereqString.toUpperCase().indexOf(" OR ");
+
+        assert(firstAND != -1 && firstOR != -1);
+
+        if (firstAND < firstOR) {
+            ret.setOperator("AND");
+        } else {
+            ret.setOperator("OR");
+        }
+
+        // * Get individual terms
+        List<String> terms = splitStringIntoTerms(prereqString, ret.getOperator());
+
+        // * Iterate over terms. To "operands", add constructPrereqsFromString(term) for all
+
+        for (String term : terms) {
+            ret.getOperands().add(constructPrereqsFromString(term));
+        }
+
+        return ret;
+
+    }
+
+    private List<String> splitStringIntoTerms(String prereqString, String operator) {
+        assert(operator == "AND" || operator == "OR");
+
+        List<String> ret = new ArrayList<>();
+
+        int index = 0;
+        while (index < prereqString.length()) {
+            // * Get term, and find next character *after* next operator
+            int nextOperator;
+
+            if (prereqString.charAt(index) == '(') {
+                int nextParentheses = prereqString.indexOf(")", index);
+                assert(nextParentheses != -1);
+                ret.add(prereqString.substring(index, nextParentheses + 1));
+
+                nextOperator = prereqString.toUpperCase().indexOf(" " + operator, nextParentheses);
+            } else {
+                // * Find next operator and add everything inbetween
+                nextOperator = prereqString.toUpperCase().indexOf(" " + operator, index);
+
+                if (nextOperator == -1) { // If no next operator, then can return early
+                    return ret;
+                }
+
+                ret.add(prereqString.substring(index, nextOperator));
+            }  
+            
+            // * Find first character of next term
+            index = nextOperator + (operator == "AND" ? 5 : 4);
+
+            // * Repeat (happens at top of while loop)
+        }
+
+        return ret;
+    }
+
+
 
     public Course getCourse(String id) {
         Optional<Course> optionalCourse = courseRepository.findById(id);
