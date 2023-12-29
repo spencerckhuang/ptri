@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Fri Dec 29 01:13:39 EST 2023:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018c-b434-f7f3-0000038e5578 
-on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/1eaf799d-750b-4930-94fd-408d344c5ace with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
+Fri Dec 29 01:34:15 EST 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018c-b447-d336-000002b05ec8 
+on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/3ab9eb1f-16a6-4aae-8a54-14de3687ba1b with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
 Loaded from file:/Users/spencerckhuang/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
 java.vendor=Oracle Corporation
 java.runtime.version=21.0.1+12-LTS-29
@@ -12,5 +12,5 @@ os.version=13.3.1
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''
 ----------------------------------------------------------------
-Fri Dec 29 01:13:53 EST 2023:
-Shutting down instance a816c00e-018c-b434-f7f3-0000038e5578 on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/1eaf799d-750b-4930-94fd-408d344c5ace with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
+Fri Dec 29 01:34:25 EST 2023:
+Shutting down instance a816c00e-018c-b447-d336-000002b05ec8 on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/3ab9eb1f-16a6-4aae-8a54-14de3687ba1b with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 

@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,13 +71,27 @@ public class CourseService {
 
             String prereqString = course.getPrerequisiteString();
 
+            // * Remove unnecessary phrases from end
+            List<String> badPhrases = new ArrayList<>(Arrays.asList("or permission of the instructor."));
+
+            for (String badPhrase : badPhrases) {
+                if (prereqString.endsWith(badPhrase)) {
+                    prereqString = prereqString.substring(0, prereqString.length() - badPhrase.length()).trim();
+                }
+            }
+
+            System.out.println("Prerequisite string after modification: " + prereqString);
+
+            System.out.println("-- constructing prereq object debugging --");
             course.setPrerequisiteFor(constructPrereqsFromString(prereqString));
+            System.out.println("-- debugging statements done --");
+
             System.out.println("Prerequisite object:\n" + course.getPrerequisiteFor().toString());
             System.out.println("Matching done! Saving...");
 
             courseRepository.save(course);
 
-            System.out.println("Save successful!");
+            System.out.println("Save successful!\n\n");
 
         }
 
@@ -180,22 +192,30 @@ public class CourseService {
             prereqString = prereqString.substring(1, prereqString.length() - 1).trim();
         }
 
+        System.out.println("cur prereq string: " + prereqString);
+
         PrerequisiteList ret = new PrerequisiteList();
 
         // * Get operator
-        int firstAND = prereqString.toUpperCase().indexOf(" AND ");
-        int firstOR = prereqString.toUpperCase().indexOf(" OR ");
+        int firstAND = prereqString.toUpperCase().indexOf(" AND");
+        int firstOR = prereqString.toUpperCase().indexOf(" OR");
 
         if (firstAND == -1 && firstOR == -1) {
             return new PrerequisiteList(prereqString);
-        } else if(firstAND < firstOR) {
+        } else if (firstAND == -1) {
+            ret.setOperator("OR");
+        } else if (firstOR == -1) {
             ret.setOperator("AND");
         } else {
-            ret.setOperator("OR");
+            ret.setOperator(firstAND < firstOR ? "AND" : "OR");
         }
 
+        System.out.println("cur operator: " + ret.getOperator());
+
         // * Get individual terms
-        List<String> terms = splitStringIntoTerms(prereqString, ret.getOperator());       
+        List<String> terms = splitStringIntoTerms(prereqString, ret.getOperator());  
+        
+        System.out.println("individual terms: " + terms.toString());
 
         // Iterate over terms. To "operands", add constructPrereqsFromString(term) for all
         for (String term : terms) {
@@ -208,6 +228,8 @@ public class CourseService {
 
     private List<String> splitStringIntoTerms(String prereqString, String operator) {
         assert(operator == "AND" || operator == "OR");
+
+        System.out.println("current operator: " + operator);
 
         List<String> ret = new ArrayList<>();
 
@@ -227,6 +249,7 @@ public class CourseService {
                 nextOperator = prereqString.toUpperCase().indexOf(" " + operator, index);
 
                 if (nextOperator == -1) { // If no next operator, then can return early
+                    ret.add(prereqString.substring(index, prereqString.length()));
                     return ret;
                 }
 
@@ -234,6 +257,10 @@ public class CourseService {
             }  
             
             // * Find first character of next term
+            if (nextOperator == -1) {
+                return ret;
+            }
+
             index = nextOperator + (operator == "AND" ? 5 : 4);
 
             // * Repeat (happens at top of while loop)
