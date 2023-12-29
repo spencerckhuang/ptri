@@ -69,13 +69,17 @@ public class CourseService {
         System.out.println("STARTING MATCHING...");
 
         for (Course course : courses) {
+            System.out.println("Matching " + course.getTitle() + "...");
 
             String prereqString = course.getPrerequisiteString();
-            prereqString = "(" + prereqString + ")";
 
             course.setPrerequisiteFor(constructPrereqsFromString(prereqString));
+            System.out.println("Prerequisite object:\n" + course.getPrerequisiteFor().toString());
+            System.out.println("Matching done! Saving...");
 
             courseRepository.save(course);
+
+            System.out.println("Save successful!");
 
         }
 
@@ -170,35 +174,30 @@ public class CourseService {
     }
 
     public PrerequisiteList constructPrereqsFromString (String prereqString) {
-        // * Base case: prereqString only represents one course
-        if (!prereqString.startsWith("(")) {
-            // This will return a "UNIT" PrerequisiteList
-            return new PrerequisiteList(prereqString);
+        // * If it has surrounding parentheses, get rid of them
+        prereqString = prereqString.trim();
+        if (prereqString.charAt(0) == '(' && prereqString.indexOf(')') == prereqString.length() - 1) {
+            prereqString = prereqString.substring(1, prereqString.length() - 1).trim();
         }
 
-        // * Recursive case: prereqString represents multiple terms
         PrerequisiteList ret = new PrerequisiteList();
-
-        // * Trim external parentheses off string and extra whitespace
-        prereqString = prereqString.substring(1, prereqString.length() - 1).trim();   
 
         // * Get operator
         int firstAND = prereqString.toUpperCase().indexOf(" AND ");
         int firstOR = prereqString.toUpperCase().indexOf(" OR ");
 
-        assert(firstAND != -1 && firstOR != -1);
-
-        if (firstAND < firstOR) {
+        if (firstAND == -1 && firstOR == -1) {
+            return new PrerequisiteList(prereqString);
+        } else if(firstAND < firstOR) {
             ret.setOperator("AND");
         } else {
             ret.setOperator("OR");
         }
 
         // * Get individual terms
-        List<String> terms = splitStringIntoTerms(prereqString, ret.getOperator());
+        List<String> terms = splitStringIntoTerms(prereqString, ret.getOperator());       
 
-        // * Iterate over terms. To "operands", add constructPrereqsFromString(term) for all
-
+        // Iterate over terms. To "operands", add constructPrereqsFromString(term) for all
         for (String term : terms) {
             ret.getOperands().add(constructPrereqsFromString(term));
         }

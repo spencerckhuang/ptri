@@ -43,6 +43,20 @@ public class PrerequisiteList {
         this.operands = operands;
     }
 
+    public String toString() {
+        if (operator == "UNIT") {
+            String ret = "UNIT: " + unitString;
+            return ret;
+        }
+
+        String ret = operator + ":\n";
+        for (PrerequisiteList p : operands) {
+            ret += p.toString() + "\n";
+        }
+
+        return ret;
+    }
+
     
 
    
