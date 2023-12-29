@@ -44,17 +44,20 @@ public class PrerequisiteList {
     }
 
     public String toString() {
-        if (operator == "UNIT") {
-            String ret = "UNIT: " + unitString;
-            return ret;
+        switch (operator) {
+            case "NULL":
+                return "Null List";
+            case "UNIT":
+                return "Unit: " + unitString;
+            default:
+                String ret = operator + ": {\n";
+                for (PrerequisiteList p : operands) {
+                    ret += p.toString() + "\n";
+                }
+                ret += "\n}";
+                return ret;
         }
-
-        String ret = operator + ":\n";
-        for (PrerequisiteList p : operands) {
-            ret += p.toString() + "\n";
-        }
-
-        return ret;
+        
     }
 
     

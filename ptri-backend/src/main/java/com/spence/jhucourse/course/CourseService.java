@@ -1,11 +1,11 @@
 package com.spence.jhucourse.course;
 
-import java.util.List;
-import java.util.Map;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,10 +69,14 @@ public class CourseService {
         for (Course course : courses) {
             System.out.println("Matching " + course.getTitle() + "...");
 
+            // ! This is not ideal, only here since some courses have INCORRECTLY FORMATTED PREREQUISISITE STRINGS :(
+                // rip processing time, TOD 12/29/2023, 12:28pm
+            manualAdjustments(course);
+
             String prereqString = course.getPrerequisiteString();
 
             // * Remove unnecessary phrases from end
-            List<String> badPhrases = new ArrayList<>(Arrays.asList("or permission of the instructor."));
+            List<String> badPhrases = new ArrayList<>(Arrays.asList("or permission of the instructor.", "or permission", "or permission."));
 
             for (String badPhrase : badPhrases) {
                 if (prereqString.endsWith(badPhrase)) {
@@ -110,8 +114,11 @@ public class CourseService {
                 .buildAndExpand(codeAndSection, "Fall 2023");
 
         List<String> badKeyphrases = new ArrayList<>(
-                Arrays.asList("Students can only", "Students may", "Students can take",
-                        "Students must have completed Lab Safety", "Credit may only be earned"));
+                Arrays.asList("Students", "Credit may only be earned"));
+
+        // List<String> badKeyphrases = new ArrayList<>(
+        //         Arrays.asList("Students can", "Students may", "Students can take",
+        //                 "Students must have completed Lab Safety", "Credit may only be earned"));
 
         return webClient.get()
                 .uri(uriComponents.toUriString(), codeAndSection, "Fall 2023")
@@ -186,19 +193,38 @@ public class CourseService {
     }
 
     public PrerequisiteList constructPrereqsFromString (String prereqString) {
+        if (prereqString == "") {
+            return createNullPrerequisiteList();
+        }
+
         // * If it has surrounding parentheses, get rid of them
         prereqString = prereqString.trim();
         if (prereqString.charAt(0) == '(' && prereqString.indexOf(')') == prereqString.length() - 1) {
             prereqString = prereqString.substring(1, prereqString.length() - 1).trim();
         }
 
+        prereqString = prereqString.trim();
         System.out.println("cur prereq string: " + prereqString);
+        System.out.println("first char: " + (int)prereqString.charAt(0));
 
         PrerequisiteList ret = new PrerequisiteList();
 
-        // * Get operator
-        int firstAND = prereqString.toUpperCase().indexOf(" AND");
-        int firstOR = prereqString.toUpperCase().indexOf(" OR");
+        // * Get operator: Get first term, then find operator after that
+
+        // * Shave off potential outer parentheses
+        if (prereqString.charAt(0) == '(' && findMatchingClosingParentheses(prereqString, 0) == prereqString.length() - 1) {
+            prereqString = prereqString.substring(1, prereqString.length() - 1);
+        }
+
+        // Get first term:
+        int firstTermIndex = 0;
+
+        if (prereqString.charAt(0) == '(') {
+            firstTermIndex = findMatchingClosingParentheses(prereqString, firstTermIndex);
+        }
+
+        int firstAND = prereqString.toUpperCase().indexOf(" AND", firstTermIndex);
+        int firstOR = prereqString.toUpperCase().indexOf(" OR", firstTermIndex);
 
         if (firstAND == -1 && firstOR == -1) {
             return new PrerequisiteList(prereqString);
@@ -239,8 +265,9 @@ public class CourseService {
             int nextOperator;
 
             if (prereqString.charAt(index) == '(') {
-                int nextParentheses = prereqString.indexOf(")", index);
+                int nextParentheses = findMatchingClosingParentheses(prereqString, index);
                 assert(nextParentheses != -1);
+
                 ret.add(prereqString.substring(index, nextParentheses + 1));
 
                 nextOperator = prereqString.toUpperCase().indexOf(" " + operator, nextParentheses);
@@ -269,6 +296,43 @@ public class CourseService {
         return ret;
     }
 
+    // This should only be called if the char at startIndex is an opening parentheses
+    private int findMatchingClosingParentheses(String str, int startIndex) {
+        assert (str.charAt(startIndex) == '(');
+
+        int stack = 0;
+
+        for (int i = startIndex + 1; i < str.length(); i++) {
+            switch (str.charAt(i)) {
+                case '(':
+                    stack++;
+                    break;
+                case ')':
+                    if (stack == 0) {
+                        return i;
+                    }
+                    stack--;
+            }
+        }
+
+        // This should never happen. Every opening parentheses should have a matching closing one.
+        return -1;
+    }
+
+    private PrerequisiteList createNullPrerequisiteList() {
+        PrerequisiteList ret = new PrerequisiteList();
+        ret.setOperator("NULL");
+        return ret;
+    }
+
+    private void manualAdjustments(Course course) {
+        if (course.getTitle().equals("Machine Translation")) {
+            course.setPrerequisiteString("EN.601.226 AND (EN.553.211 OR EN.553.310 OR EN.553.311 OR ((EN.553.420 OR EN.553.421) AND (EN.553.430 OR EN.553.431)))");
+        } else if (course.getTitle().equals("Machine Learning")) {
+            course.setPrerequisiteString("AS.110.202 AND (EN.553.211 OR EN.553.310 OR EN.553.311 OR ((EN.553.420 or EN.553.421) AND (EN.553.430 OR EN.553.431)) AND (AS.110.201 OR AS.110.212 OR EN.553.291 OR EN.553.295) AND (EN.500.112 OR EN.500.113 OR EN.500.114 OR (EN.601.220 OR EN.600.120) OR AS.250.205 OR EN.580.200 OR (EN.600.107 OR EN.601.107)))");
+        }
+    }
+
 
 
     public Course getCourse(String id) {
@@ -293,3 +357,4 @@ public class CourseService {
 
     }
 }
+
