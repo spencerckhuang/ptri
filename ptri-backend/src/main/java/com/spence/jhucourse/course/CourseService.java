@@ -29,6 +29,9 @@ public class CourseService {
     private CourseRepository courseRepository;
 
     @Autowired
+    private PrerequisiteListRepository prerequisiteListRepository;
+
+    @Autowired
     private JHUApiService jhuApiService;
 
     private static final String API_KEY = "Z33DyKCS864qRJnVAsC5FgdAtgV92NhF";
@@ -50,14 +53,14 @@ public class CourseService {
         for (JHUApiCourse apiCourse : apiCourses) {
             if (apiCourse.getLevel().indexOf("Graduate") == -1 && apiCourse.getLevel().indexOf("Independent") == -1) {
                 if (!uniqueCourses.containsKey(apiCourse.getOfferingName())) {
-                    System.out.println("ACCEPTED: " + apiCourse.getLevel());
+                    // System.out.println("ACCEPTED: " + apiCourse.getLevel());
                     uniqueCourses.put(apiCourse.getOfferingName(), convertToCourse(apiCourse).block());
                 } else {
-                    System.out.println("DENIED REPEAT: " + apiCourse.getLevel());
+                    // System.out.println("DENIED REPEAT: " + apiCourse.getLevel());
                 }
 
             } else {
-                System.out.println("DENIED GRAD/INDPT: " + apiCourse.getLevel());
+                // System.out.println("DENIED GRAD/INDPT: " + apiCourse.getLevel());
             }
 
         }
@@ -76,7 +79,7 @@ public class CourseService {
             String prereqString = course.getPrerequisiteString();
 
             // * Remove unnecessary phrases from end
-            List<String> badPhrases = new ArrayList<>(Arrays.asList("or permission of the instructor.", "or permission", "or permission."));
+            List<String> badPhrases = new ArrayList<>(Arrays.asList("or permission of the instructor.", "or permission", "or permission.", "or equivalent.", "(Computer System Fundamentals)"));
 
             for (String badPhrase : badPhrases) {
                 if (prereqString.endsWith(badPhrase)) {
@@ -84,18 +87,20 @@ public class CourseService {
                 }
             }
 
-            System.out.println("Prerequisite string after modification: " + prereqString);
+            // System.out.println("Prerequisite string after modification: " + prereqString);
 
-            System.out.println("-- constructing prereq object debugging --");
-            course.setPrerequisiteFor(constructPrereqsFromString(prereqString));
-            System.out.println("-- debugging statements done --");
+            // System.out.println("-- constructing prereq object debugging --");
+            PrerequisiteList prereqs = constructPrereqsFromString(prereqString);
+            prerequisiteListRepository.save(prereqs);
+            course.setPrerequisiteFor(prereqs);
+            // System.out.println("-- debugging statements done --");
 
-            System.out.println("Prerequisite object:\n" + course.getPrerequisiteFor().toString());
-            System.out.println("Matching done! Saving...");
+            // System.out.println("Prerequisite object:\n" + course.getPrerequisiteFor().toString());
+            // System.out.println("Matching done! Saving...");
 
             courseRepository.save(course);
 
-            System.out.println("Save successful!\n\n");
+            // System.out.println("Save successful!\n\n");
 
         }
 
@@ -194,6 +199,8 @@ public class CourseService {
 
     public PrerequisiteList constructPrereqsFromString (String prereqString) {
         if (prereqString == "") {
+            PrerequisiteList ret = createNullPrerequisiteList();
+            prerequisiteListRepository.save(ret);
             return createNullPrerequisiteList();
         }
 
@@ -204,8 +211,8 @@ public class CourseService {
         }
 
         prereqString = prereqString.trim();
-        System.out.println("cur prereq string: " + prereqString);
-        System.out.println("first char: " + (int)prereqString.charAt(0));
+        // System.out.println("cur prereq string: " + prereqString);
+        // System.out.println("first char: " + (int)prereqString.charAt(0));
 
         PrerequisiteList ret = new PrerequisiteList();
 
@@ -236,17 +243,21 @@ public class CourseService {
             ret.setOperator(firstAND < firstOR ? "AND" : "OR");
         }
 
-        System.out.println("cur operator: " + ret.getOperator());
+        prerequisiteListRepository.save(ret);
+
+        // System.out.println("cur operator: " + ret.getOperator());
 
         // * Get individual terms
         List<String> terms = splitStringIntoTerms(prereqString, ret.getOperator());  
         
-        System.out.println("individual terms: " + terms.toString());
+        // System.out.println("individual terms: " + terms.toString());
 
         // Iterate over terms. To "operands", add constructPrereqsFromString(term) for all
         for (String term : terms) {
             ret.getOperands().add(constructPrereqsFromString(term));
         }
+
+        prerequisiteListRepository.save(ret);
 
         return ret;
 
@@ -255,7 +266,7 @@ public class CourseService {
     private List<String> splitStringIntoTerms(String prereqString, String operator) {
         assert(operator == "AND" || operator == "OR");
 
-        System.out.println("current operator: " + operator);
+        // System.out.println("current operator: " + operator);
 
         List<String> ret = new ArrayList<>();
 
@@ -329,7 +340,7 @@ public class CourseService {
         if (course.getTitle().equals("Machine Translation")) {
             course.setPrerequisiteString("EN.601.226 AND (EN.553.211 OR EN.553.310 OR EN.553.311 OR ((EN.553.420 OR EN.553.421) AND (EN.553.430 OR EN.553.431)))");
         } else if (course.getTitle().equals("Machine Learning")) {
-            course.setPrerequisiteString("AS.110.202 AND (EN.553.211 OR EN.553.310 OR EN.553.311 OR ((EN.553.420 or EN.553.421) AND (EN.553.430 OR EN.553.431)) AND (AS.110.201 OR AS.110.212 OR EN.553.291 OR EN.553.295) AND (EN.500.112 OR EN.500.113 OR EN.500.114 OR (EN.601.220 OR EN.600.120) OR AS.250.205 OR EN.580.200 OR (EN.600.107 OR EN.601.107)))");
+            course.setPrerequisiteString("AS.110.202 AND (EN.553.211 OR EN.553.310 OR EN.553.311 OR ((EN.553.420 or EN.553.421) AND (EN.553.430 OR EN.553.431))) AND (AS.110.201 OR AS.110.212 OR EN.553.291 OR EN.553.295) AND (EN.500.112 OR EN.500.113 OR EN.500.114 OR (EN.601.220 OR EN.600.120) OR AS.250.205 OR EN.580.200 OR (EN.600.107 OR EN.601.107)))");
         }
     }
 

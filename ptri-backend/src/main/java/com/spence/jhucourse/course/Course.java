@@ -1,10 +1,12 @@
 package com.spence.jhucourse.course;
 
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Transient;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class Course {
@@ -19,7 +21,8 @@ public class Course {
     @Column(length = 2000)
     private String prerequisiteString; // get this first from raw api call
 
-    @Transient
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "prerequisite_id")
     private PrerequisiteList prerequisiteFor;
 
     public Course() {
