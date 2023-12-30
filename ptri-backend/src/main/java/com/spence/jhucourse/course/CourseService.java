@@ -53,14 +53,14 @@ public class CourseService {
         for (JHUApiCourse apiCourse : apiCourses) {
             if (apiCourse.getLevel().indexOf("Graduate") == -1 && apiCourse.getLevel().indexOf("Independent") == -1) {
                 if (!uniqueCourses.containsKey(apiCourse.getOfferingName())) {
-                    // System.out.println("ACCEPTED: " + apiCourse.getLevel());
+                    System.out.println("ACCEPTED: " + apiCourse.getLevel());
                     uniqueCourses.put(apiCourse.getOfferingName(), convertToCourse(apiCourse).block());
                 } else {
-                    // System.out.println("DENIED REPEAT: " + apiCourse.getLevel());
+                    System.out.println("DENIED REPEAT: " + apiCourse.getLevel());
                 }
 
             } else {
-                // System.out.println("DENIED GRAD/INDPT: " + apiCourse.getLevel());
+                System.out.println("DENIED GRAD/INDPT: " + apiCourse.getLevel());
             }
 
         }
@@ -79,7 +79,7 @@ public class CourseService {
             String prereqString = course.getPrerequisiteString();
 
             // * Remove unnecessary phrases from end
-            List<String> badPhrases = new ArrayList<>(Arrays.asList("or permission of the instructor.", "or permission", "or permission.", "or equivalent.", "(Computer System Fundamentals)"));
+            List<String> badPhrases = new ArrayList<>(Arrays.asList("or permission of the instructor.", "or permission of instructor.", "or permission", "or permission.", "or equivalent.", "(Computer System Fundamentals)"));
 
             for (String badPhrase : badPhrases) {
                 if (prereqString.endsWith(badPhrase)) {

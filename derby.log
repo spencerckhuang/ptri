@@ -43,3 +43,6 @@ os.arch=aarch64
 os.version=13.3.1
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Sat Dec 30 15:54:50 EST 2023:
+Shutting down instance e7b11949-018c-bc7e-14a3-000002c50dd8 on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/fa7ec897-b3ee-46bf-b579-31ebdae298f3 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
