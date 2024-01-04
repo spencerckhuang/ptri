@@ -1,0 +1,48 @@
+----------------------------------------------------------------
+Sat Dec 30 15:50:28 EST 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018c-bc7e-14a3-000002c50dd8 
+on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/eda779b5-2939-4991-b376-3de6269a5ade with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
+Loaded from file:/Users/spencerckhuang/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.1+12-LTS-29
+user.dir=/Users/spencerckhuang/ptri_dir/ptri
+os.name=Mac OS X
+os.arch=aarch64
+os.version=13.3.1
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Sat Dec 30 15:51:42 EST 2023:
+Shutting down instance a816c00e-018c-bc7e-14a3-000002c50dd8 on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/eda779b5-2939-4991-b376-3de6269a5ade with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
+----------------------------------------------------------------
+Sat Dec 30 15:51:43 EST 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance 3a1f0cb9-018c-bc7e-14a3-000002c50dd8 
+on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/f96c8d89-8ac0-44df-92ed-6306fc66c7f4 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
+Loaded from file:/Users/spencerckhuang/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.1+12-LTS-29
+user.dir=/Users/spencerckhuang/ptri_dir/ptri
+os.name=Mac OS X
+os.arch=aarch64
+os.version=13.3.1
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Sat Dec 30 15:53:01 EST 2023:
+Shutting down instance 3a1f0cb9-018c-bc7e-14a3-000002c50dd8 on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/f96c8d89-8ac0-44df-92ed-6306fc66c7f4 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
+----------------------------------------------------------------
+Sat Dec 30 15:53:02 EST 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance e7b11949-018c-bc7e-14a3-000002c50dd8 
+on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/fa7ec897-b3ee-46bf-b579-31ebdae298f3 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
+Loaded from file:/Users/spencerckhuang/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.1+12-LTS-29
+user.dir=/Users/spencerckhuang/ptri_dir/ptri
+os.name=Mac OS X
+os.arch=aarch64
+os.version=13.3.1
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Sat Dec 30 15:54:50 EST 2023:
+Shutting down instance e7b11949-018c-bc7e-14a3-000002c50dd8 on database directory memory:/Users/spencerckhuang/ptri_dir/ptri/fa7ec897-b3ee-46bf-b579-31ebdae298f3 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 

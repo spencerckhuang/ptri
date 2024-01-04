@@ -1,12 +1,12 @@
 package com.spence.jhucourse.course;
 
-import java.util.ArrayList;
-import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class Course {
@@ -18,17 +18,19 @@ public class Course {
     @Column(length = 2000)
     private String description;
 
-    @Column(length = 1000)
+    @Column(length = 2000)
     private String prerequisiteString; // get this first from raw api call
 
-    private List<String> prerequisiteFor; // later we process the above string and fill out this list
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "prerequisite_id")
+    private PrerequisiteList prerequisiteFor;
 
     public Course() {
         this.offeringName = "";
         this.title = "";
         this.description = "";
         this.prerequisiteString = "";
-        this.prerequisiteFor = new ArrayList<>();
+        this.prerequisiteFor = new PrerequisiteList();
     }
 
     public String getOfferingName() {
@@ -63,11 +65,11 @@ public class Course {
         this.prerequisiteString = prerequisiteString;
     }
 
-    public List<String> getPrerequisiteFor() {
+    public PrerequisiteList getPrerequisiteFor() {
         return this.prerequisiteFor;
     }
 
-    public void setPrerequisiteFor(List<String> prerequisiteFor) {
+    public void setPrerequisiteFor(PrerequisiteList prerequisiteFor) {
         this.prerequisiteFor = prerequisiteFor;
     }
 
