@@ -3,11 +3,13 @@ package com.spence.jhucourse.apicourse;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/apicourse")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true", allowedHeaders = "*")
 public class JHUApiCourseController {
     private final JHUApiService jhuApiService;
     private static final String API_KEY = "Z33DyKCS864qRJnVAsC5FgdAtgV92NhF";

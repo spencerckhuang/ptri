@@ -3,7 +3,7 @@ import ReactFlow, { useNodesState, useEdgesState, addEdge } from 'reactflow';
 import 'reactflow/dist/style.css';
 import axios from 'axios';
 
-const BASE_URL = "localhost:8080/";
+const BASE_URL = "http://localhost:8080/";
 
 type CourseNode = {
     id: string;
@@ -61,17 +61,21 @@ const generateNodesAndEdges = () => {
     ];
    
     
-    axios.get(BASE_URL + "courses")
+    axios.get(BASE_URL + "courses", { withCredentials: true })
         .then(function (response) {
             // Create all nodes
+            console.log("Success");
+            console.log(response);
+
 
 
             // Create all edges
         })
         .catch(function (error) {
+            console.log("ERROR: " + error);
 
-        }).finally(function () {
-
+        }).finally(function () {    
+            console.log("CONFIRM ENDPOINT: " + BASE_URL + "courses");
         });
     
     return (
@@ -82,6 +86,7 @@ const generateNodesAndEdges = () => {
 
 
 const Graph = () => {
+    console.log("Graph.tsx");
     const nodesAndEdges = generateNodesAndEdges();
 
     const initialNodes = nodesAndEdges[0];

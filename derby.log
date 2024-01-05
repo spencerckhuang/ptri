@@ -1,23 +1,7 @@
 ----------------------------------------------------------------
-Thu Jan 04 15:53:26 EST 2024:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018c-d640-98c0-0000035dfa68 
-on database directory memory:C:\Users\Spencer Huang\Desktop\ptri\c3442f2a-02fb-4438-a13f-f710bfda1ab4 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@33909752 
-Loaded from file:/C:/Users/Spencer%20Huang/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
-java.vendor=Oracle Corporation
-java.runtime.version=21.0.1+12-LTS-29
-user.dir=C:\Users\Spencer Huang\Desktop\ptri
-os.name=Windows 11
-os.arch=amd64
-os.version=10.0
-derby.system.home=null
-Database Class Loader started - derby.database.classpath=''
-----------------------------------------------------------------
-Thu Jan 04 15:54:41 EST 2024:
-Shutting down instance a816c00e-018c-d640-98c0-0000035dfa68 on database directory memory:C:\Users\Spencer Huang\Desktop\ptri\c3442f2a-02fb-4438-a13f-f710bfda1ab4 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@33909752 
-----------------------------------------------------------------
-Thu Jan 04 15:54:41 EST 2024:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance ae8f4c97-018c-d640-98c0-0000035dfa68 
-on database directory memory:C:\Users\Spencer Huang\Desktop\ptri\41f7ea97-851a-4db4-9b72-5e24d5b5817c with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@33909752 
+Fri Jan 05 18:31:41 EST 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018c-dbf7-d544-0000035f4008 
+on database directory memory:C:\Users\Spencer Huang\Desktop\ptri\b4d64da3-099b-43cd-bfd0-2cfa76393df6 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@33909752 
 Loaded from file:/C:/Users/Spencer%20Huang/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
 java.vendor=Oracle Corporation
 java.runtime.version=21.0.1+12-LTS-29
