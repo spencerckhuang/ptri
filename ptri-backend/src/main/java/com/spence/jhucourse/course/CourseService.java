@@ -87,20 +87,10 @@ public class CourseService {
                 }
             }
 
-            // System.out.println("Prerequisite string after modification: " + prereqString);
-
-            // System.out.println("-- constructing prereq object debugging --");
             PrerequisiteList prereqs = constructPrereqsFromString(prereqString);
             prerequisiteListRepository.save(prereqs);
             course.setPrerequisiteFor(prereqs);
-            // System.out.println("-- debugging statements done --");
-
-            // System.out.println("Prerequisite object:\n" + course.getPrerequisiteFor().toString());
-            // System.out.println("Matching done! Saving...");
-
             courseRepository.save(course);
-
-            // System.out.println("Save successful!\n\n");
 
         }
 
@@ -211,9 +201,6 @@ public class CourseService {
         }
 
         prereqString = prereqString.trim();
-        // System.out.println("cur prereq string: " + prereqString);
-        // System.out.println("first char: " + (int)prereqString.charAt(0));
-
         PrerequisiteList ret = new PrerequisiteList();
 
         // * Get operator: Get first term, then find operator after that
@@ -245,12 +232,8 @@ public class CourseService {
 
         prerequisiteListRepository.save(ret);
 
-        // System.out.println("cur operator: " + ret.getOperator());
-
         // * Get individual terms
         List<String> terms = splitStringIntoTerms(prereqString, ret.getOperator());  
-        
-        // System.out.println("individual terms: " + terms.toString());
 
         // Iterate over terms. To "operands", add constructPrereqsFromString(term) for all
         for (String term : terms) {
@@ -265,9 +248,6 @@ public class CourseService {
 
     private List<String> splitStringIntoTerms(String prereqString, String operator) {
         assert(operator == "AND" || operator == "OR");
-
-        // System.out.println("current operator: " + operator);
-
         List<String> ret = new ArrayList<>();
 
         int index = 0;
@@ -343,8 +323,6 @@ public class CourseService {
             course.setPrerequisiteString("AS.110.202 AND (EN.553.211 OR EN.553.310 OR EN.553.311 OR ((EN.553.420 or EN.553.421) AND (EN.553.430 OR EN.553.431))) AND (AS.110.201 OR AS.110.212 OR EN.553.291 OR EN.553.295) AND (EN.500.112 OR EN.500.113 OR EN.500.114 OR (EN.601.220 OR EN.600.120) OR AS.250.205 OR EN.580.200 OR (EN.600.107 OR EN.601.107)))");
         }
     }
-
-
 
     public Course getCourse(String id) {
         Optional<Course> optionalCourse = courseRepository.findById(id);

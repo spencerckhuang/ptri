@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Fri Jan 05 18:31:41 EST 2024:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018c-dbf7-d544-0000035f4008 
-on database directory memory:C:\Users\Spencer Huang\Desktop\ptri\b4d64da3-099b-43cd-bfd0-2cfa76393df6 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@33909752 
+Fri Jan 05 19:26:29 EST 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018c-dc2a-011b-000003661f68 
+on database directory memory:C:\Users\Spencer Huang\Desktop\ptri\6ed4ef61-28bf-4fa6-84e1-65ab9f4ae7a0 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@33909752 
 Loaded from file:/C:/Users/Spencer%20Huang/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
 java.vendor=Oracle Corporation
 java.runtime.version=21.0.1+12-LTS-29
@@ -11,3 +11,6 @@ os.arch=amd64
 os.version=10.0
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Fri Jan 05 19:46:28 EST 2024:
+Shutting down instance a816c00e-018c-dc2a-011b-000003661f68 on database directory memory:C:\Users\Spencer Huang\Desktop\ptri\6ed4ef61-28bf-4fa6-84e1-65ab9f4ae7a0 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@33909752 
