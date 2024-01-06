@@ -25,12 +25,15 @@ public class Course {
     @JoinColumn(name = "prerequisite_id")
     private PrerequisiteList prerequisiteFor;
 
+    private int level;
+
     public Course() {
         this.offeringName = "";
         this.title = "";
         this.description = "";
         this.prerequisiteString = "";
         this.prerequisiteFor = new PrerequisiteList();
+        this.level = 0;
     }
 
     public String getOfferingName() {
@@ -71,6 +74,14 @@ public class Course {
 
     public void setPrerequisiteFor(PrerequisiteList prerequisiteFor) {
         this.prerequisiteFor = prerequisiteFor;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel (int level) {
+        this.level = level;
     }
 
 }
