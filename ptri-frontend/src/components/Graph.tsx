@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import ReactFlow, { useNodesState, useEdgesState, addEdge } from 'reactflow';
+import React, { useCallback, useEffect } from 'react';
+import ReactFlow, { useNodesState, useEdgesState, addEdge, Connection, Edge } from 'reactflow';
 import 'reactflow/dist/style.css';
 import axios from 'axios';
 
@@ -23,80 +23,65 @@ type CourseEdge = {
     target: string;
 }
 
-const generateNodesAndEdges = () => {
-    // JSON object-like structure
-    /*
-        id
-        position: {<x coord>, <y coord>}
-        data: {label: 'one', <more data>}
-    */
+async function generateNodesAndEdges(): Promise<[any[], any[]]> {
+    try {
+        const response = await axios.get(`${BASE_URL}courses`, {withCredentials: true});
 
-    // ! Just for testing purposes
-    const initialNodes: CourseNode[] = [
-        { id: 'EN.601.226', position: { x: 200, y: 200 }, data: { 
-            label: 'Data Structures',
-            offeringName: 'EN.601.226'
-        }},
-        { id: 'EN.601.220', position: { x: 0, y: 0 }, data: { 
-            label: 'Intermediate Programming',
-            offeringName: 'EN.601.220'
-        }},
-        { id: 'EN.500.132', position: { x: 0, y: 200 }, data: { 
-            label: 'Bootcamp: Java',
-            offeringName: 'EN.500.132'
-        }},
-        { id: 'EN.500.112', position: { x: 0, y: 400 }, data: { 
-            label: 'Gateway Computing: JAVA',
-            offeringName: 'EN.500.112'
-        }},
-    
-    ];
+        const initialNodes: any[] = [];
+        const initialEdges: any[] = [];
 
-    // ! Just for testing purposes
-    const initialEdges: CourseEdge[] = [
-        { id: 'e1', source: 'EN.601.220', target: 'EN.601.226' },
-        { id: 'e2', source: 'EN.500.132', target: 'EN.601.226'},
-        { id: 'e3', source: 'EN.500.112', target: 'EN.601.226'}
+        let yCounter = 0;
 
-    ];
-   
-    
-    axios.get(BASE_URL + "courses", { withCredentials: true })
-        .then(function (response) {
-            // Create all nodes
-            console.log("Success");
-            console.log(response);
-
-
-
-            // Create all edges
-        })
-        .catch(function (error) {
-            console.log("ERROR: " + error);
-
-        }).finally(function () {    
-            console.log("CONFIRM ENDPOINT: " + BASE_URL + "courses");
+        response.data.forEach((course: any) => {
+            const newCourseNode = {
+                id: course.offeringName,
+                position: {
+                    x: 0,
+                    y: yCounter
+                },
+                data: {
+                    label: course.title
+                }
+            };
+            initialNodes.push(newCourseNode);
+            console.log(`Created ${course.title} node`);
+            yCounter += 100;
         });
-    
-    return (
-        [initialNodes, initialEdges]
-    );
+
+        console.log(initialNodes);
+        return [initialNodes, initialEdges];
+    } catch (error) {
+        console.log("ERROR: " + error);
+        throw error;
+    } finally {
+        console.log("CONFIRMED COMPLETED");
+    }
+
 }
 
-
-
 const Graph = () => {
+    
     console.log("Graph.tsx");
-    const nodesAndEdges = generateNodesAndEdges();
 
-    const initialNodes = nodesAndEdges[0];
-    const initialEdges = nodesAndEdges[1];
+    const [nodes, setNodes, onNodesChange] = useNodesState([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [fetchedNodes, fetchedEdges] = await generateNodesAndEdges();
+                setNodes(fetchedNodes);
+                setEdges(fetchedEdges);
+            } catch (error) {
+                console.log("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
+    }, []); // Empty dependency array to run the effect only once
 
     const onConnect = useCallback(
-        (params) => setEdges((eds) => addEdge(params, eds)),
+        (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
         [setEdges],
     );
 
