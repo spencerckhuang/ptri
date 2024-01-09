@@ -32,12 +32,20 @@ async function generateNodesAndEdges(): Promise<[any[], any[]]> {
 
         let yCounter = 0;
 
+        const yCounters = new Map();
+
         response.data.forEach((course: any) => {
+            if (yCounters.has(course.level)) {
+                yCounters.set(course.level, yCounters.get(course.level) + 100);
+            } else {
+                yCounters.set(course.level, 0);
+            }
+
             const newCourseNode = {
                 id: course.offeringName,
                 position: {
-                    x: 0,
-                    y: yCounter
+                    x: course.level * 200,
+                    y: yCounters.get(course.level)
                 },
                 data: {
                     label: course.title

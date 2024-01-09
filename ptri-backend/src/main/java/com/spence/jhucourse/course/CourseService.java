@@ -96,50 +96,43 @@ public class CourseService {
 
         System.out.println("DONE MATCHING");
 
-        // * Assign levels to courses
+        setCourseLevels(courses);
+
+        System.out.println("DONE SETTING LAYERS");
+
+    }
+
+    private void setCourseLevels(List<Course> courses) {
         Map<String, Boolean> courseTakenMap = new HashMap<>();
         for (Course course : courses) {
             courseTakenMap.put(course.getOfferingName(), false);
         }
-
-
+        
         int currentLayer = 0;
         List<Course> coursesTakenThisLevel = new ArrayList<>();
+        
         while (courses.size() != 0) {
             for (int i = 0; i < courses.size(); i++) {
-                // * Check if a course was taken. If it was, indicate its layer, mark that it was taken, and remove from arraylist
                 Course currentCourse = courses.get(i);
-                System.out.println("Checking " + currentCourse.getTitle());
                 boolean validCourse = courseCanBeTaken(currentCourse.getPrerequisiteFor(), courseTakenMap);
 
                 if (validCourse) {
                     currentCourse.setLevel(currentLayer);
                     courseRepository.save(currentCourse);
-                    
-                    coursesTakenThisLevel.add(currentCourse);
-                    // courseTakenMap.put(currentCourse.getOfferingName(), true);
-                    removeFromList(i, courses);
-                    System.out.println("Set level for " + currentCourse.getTitle() + " at level " + currentLayer);
-                    i--;
-                } else {
-                    System.out.println("Course could not be taken at this time");
-                }
 
-                System.out.println("\n\n");
-                
+                    coursesTakenThisLevel.add(currentCourse);
+                    removeFromList(i, courses);
+                    i--;
+                }
             }
 
             for (Course course : coursesTakenThisLevel) {
                 courseTakenMap.put(course.getOfferingName(), true);
-            }
+            }   
 
             coursesTakenThisLevel.clear();
-
             currentLayer++;
         }
-
-        System.out.println("DONE SETTING LAYERS");
-
     }
 
     // Constant time method to remove from Course list since order doesn't matter
@@ -154,7 +147,7 @@ public class CourseService {
             case "NULL":
                 return true;
             case "UNIT":
-                return courseTakenMap.getOrDefault(prereqList.getUnitString(), true);
+                return courseTakenMap.getOrDefault(prereqList.getUnitString(), false);
             case "AND":
                 for (PrerequisiteList list : prereqList.getOperands()) {
                     if (!courseCanBeTaken(list, courseTakenMap)) {
@@ -177,6 +170,7 @@ public class CourseService {
     }
 
 
+    // Create a Mono for a Course object from a String such as the following: XX.YYY.ZZZ
     private Mono<Course> getCourseInfo(String codeAndSectionFull) {
         Course course = new Course();
 
@@ -266,7 +260,12 @@ public class CourseService {
         return false;
     }
 
-    public PrerequisiteList constructPrereqsFromString (String prereqString) {
+
+    private void handleExternalCourse(Course newCourse) {
+        courseRepository.save(newCourse);        
+    }
+
+    private PrerequisiteList constructPrereqsFromString (String prereqString) {
         if (prereqString == "") {
             PrerequisiteList ret = createNullPrerequisiteList();
             prerequisiteListRepository.save(ret);
@@ -285,6 +284,7 @@ public class CourseService {
         // * Get operator: Get first term, then find operator after that
 
         // * Shave off potential outer parentheses
+        // ! I think this is unnecessary bc of above lines? double check later
         if (prereqString.charAt(0) == '(' && findMatchingClosingParentheses(prereqString, 0) == prereqString.length() - 1) {
             prereqString = prereqString.substring(1, prereqString.length() - 1);
         }
@@ -300,7 +300,16 @@ public class CourseService {
         int firstOR = prereqString.toUpperCase().indexOf(" OR", firstTermIndex);
 
         if (firstAND == -1 && firstOR == -1) {
+            //* First check that prereq string is a course code */
+            try {
+                Mono<Course> courseMono = getCourseInfo(prereqString);
+                handleExternalCourse(courseMono.block());
+            } catch (Exception e) {
+                System.out.println("AAAAAAAAAAAAAAAA");
+            }
+
             return new PrerequisiteList(prereqString);
+            
         } else if (firstAND == -1) {
             ret.setOperator("OR");
         } else if (firstOR == -1) {
@@ -402,6 +411,8 @@ public class CourseService {
             course.setPrerequisiteString("AS.110.202 AND (EN.553.211 OR EN.553.310 OR EN.553.311 OR ((EN.553.420 or EN.553.421) AND (EN.553.430 OR EN.553.431))) AND (AS.110.201 OR AS.110.212 OR EN.553.291 OR EN.553.295) AND (EN.500.112 OR EN.500.113 OR EN.500.114 OR (EN.601.220 OR EN.600.120) OR AS.250.205 OR EN.580.200 OR (EN.600.107 OR EN.601.107)))");
         } else if (course.getTitle().equals("Computer Integrated Surgery I")) {
             course.setPrerequisiteString("EN.601.226 AND (AS.110.201 OR AS.110.212 OR EN.553.291)");
+        } else if (course.getTitle().equals("Computer Vision")) {
+            course.setPrerequisiteString("(EN.553.310 OR EN.553.311 OR ((EN.553.420 OR EN.553.421) AND (EN.553.430 OR EN.553.431)) AND (AS.110.201 OR AS.110.212 OR EN.553.291 OR EN.553.295)) AND (EN.500.112 OR EN.500.113 OR EN.500.114 OR EN.601.220 OR AS.250.205)");
         }
     }
 
