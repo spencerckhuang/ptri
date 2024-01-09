@@ -412,7 +412,7 @@ public class CourseService {
         } else if (course.getTitle().equals("Computer Integrated Surgery I")) {
             course.setPrerequisiteString("EN.601.226 AND (AS.110.201 OR AS.110.212 OR EN.553.291)");
         } else if (course.getTitle().equals("Computer Vision")) {
-            course.setPrerequisiteString("(EN.553.310 OR EN.553.311 OR ((EN.553.420 OR EN.553.421) AND (EN.553.430 OR EN.553.431)) AND (AS.110.201 OR AS.110.212 OR EN.553.291 OR EN.553.295)) AND (EN.500.112 OR EN.500.113 OR EN.500.114 OR EN.601.220 OR AS.250.205)");
+            course.setPrerequisiteString("(EN.553.310 OR EN.553.311 OR ((EN.553.420 OR EN.553.421) AND (EN.553.430 OR EN.553.431)) AND (AS.110.201 OR AS.110.212 OR EN.553.291 OR EN.553.295) AND (EN.500.112 OR EN.500.113 OR EN.500.114 OR EN.601.220 OR AS.250.205)");
         }
     }
 
