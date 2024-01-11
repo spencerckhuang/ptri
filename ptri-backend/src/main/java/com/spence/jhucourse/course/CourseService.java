@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,8 +41,17 @@ public class CourseService {
     @Autowired
     private final WebClient webClient;
 
+    private List<Course> courses;
+    private List<Course> nonMajorCourses;
+    Map<String, Course> uniqueCourses;
+    private Set<String> coursesTaken;
+
     public CourseService(WebClient webClient) {
         this.webClient = webClient;
+        courses = new ArrayList<>();
+        nonMajorCourses = new ArrayList<>();
+        coursesTaken = new HashSet<>();
+        uniqueCourses = new HashMap<>();
     }
 
     public void getAllCourses() { // Maybe connect this to JHUApiService instead
@@ -48,35 +59,42 @@ public class CourseService {
         Flux<JHUApiCourse> apiCourseFlux = jhuApiService.makeApiCall(API_KEY);
         List<JHUApiCourse> apiCourses = apiCourseFlux.collectList().block();
 
-        Map<String, Course> uniqueCourses = new HashMap<>();
+        System.out.println("Accepting/Denying courses...");
 
         for (JHUApiCourse apiCourse : apiCourses) {
             if (apiCourse.getLevel().indexOf("Graduate") == -1 && apiCourse.getLevel().indexOf("Independent") == -1) {
                 if (!uniqueCourses.containsKey(apiCourse.getOfferingName())) {
-                    System.out.println("ACCEPTED: " + apiCourse.getLevel());
+                    // System.out.println("ACCEPTED: " + apiCourse.getLevel());
                     uniqueCourses.put(apiCourse.getOfferingName(), convertToCourse(apiCourse).block());
                 } else {
-                    System.out.println("DENIED REPEAT: " + apiCourse.getLevel());
+                    // System.out.println("DENIED REPEAT: " + apiCourse.getLevel());
                 }
 
             } else {
-                System.out.println("DENIED GRAD/INDPT: " + apiCourse.getLevel());
+                // System.out.println("DENIED GRAD/INDPT: " + apiCourse.getLevel());
             }
 
         }
 
-        List<Course> courses = new ArrayList<>(uniqueCourses.values());
+        System.out.println("Accepting/Denying completed!");
 
-        System.out.println("STARTING MATCHING...");
-
+        courses = new ArrayList<>(uniqueCourses.values());
+        System.out.println("List of current CS courses:");
         for (Course course : courses) {
-            System.out.println("Matching " + course.getTitle() + "...");
+            System.out.println("\t" + course.getTitle() + " (" + course.getOfferingName() + ")");
+        }
+        
+
+        System.out.println("Starting course matching...");
+
+        for (int i = 0; i < courses.size(); i++) {
+            // System.out.println("Matching " + courses.get(i).getTitle() + "...");
 
             // ! This is not ideal, only here since some courses have INCORRECTLY FORMATTED PREREQUISISITE STRINGS :(
                 // rip processing time, TOD 12/29/2023, 12:28pm
-            manualAdjustments(course);
+            manualAdjustments(courses.get(i));
 
-            String prereqString = course.getPrerequisiteString();
+            String prereqString = courses.get(i).getPrerequisiteString();
 
             // * Remove unnecessary phrases from end
             List<String> badPhrases = new ArrayList<>(Arrays.asList("or permission of the instructor.", "or permission of instructor.", "or permission", "or permission.", "or equivalent.", "(Computer System Fundamentals)"));
@@ -89,84 +107,159 @@ public class CourseService {
 
             PrerequisiteList prereqs = constructPrereqsFromString(prereqString);
             prerequisiteListRepository.save(prereqs);
-            course.setPrerequisiteFor(prereqs);
-            courseRepository.save(course);
-
+            courses.get(i).setPrerequisiteFor(prereqs);
+            courseRepository.save(courses.get(i));
         }
 
-        System.out.println("DONE MATCHING");
+        System.out.println("Done matching major courses!");
 
-        setCourseLevels(courses);
+        System.out.println("List of non-major courses collected: ");
+        for (Course course : nonMajorCourses) {
+            System.out.println("\t" + course.getTitle() + " (" + course.getOfferingName() + ")");
+        }
+        
+        System.out.println("Processing non-major courses...");
+        processNonMajorCourses();
+        System.out.println("Done matching non-major courses!");
 
-        System.out.println("DONE SETTING LAYERS");
+        courses.addAll(nonMajorCourses);
+        
+        System.out.println("Setting levels...");
+        setCourseLevels();
+
+        System.out.println("Done setting levels!");
+
+        System.out.println("Process complete -- API ready to use :)");
 
     }
 
-    private void setCourseLevels(List<Course> courses) {
-        Map<String, Boolean> courseTakenMap = new HashMap<>();
-        for (Course course : courses) {
-            courseTakenMap.put(course.getOfferingName(), false);
+    private void processNonMajorCourses() {
+        int index = 0;
+        while (index < nonMajorCourses.size()) {
+            Course currentCourse = nonMajorCourses.get(index);
+            if (currentCourse.getTitle().equals("")) {
+                removeCourseFromList(index, nonMajorCourses);
+            } else {
+                courseRepository.save(currentCourse);
+                index++;
+            }
         }
-        
-        int currentLayer = 0;
-        List<Course> coursesTakenThisLevel = new ArrayList<>();
-        
-        while (courses.size() != 0) {
-            for (int i = 0; i < courses.size(); i++) {
-                Course currentCourse = courses.get(i);
-                boolean validCourse = courseCanBeTaken(currentCourse.getPrerequisiteFor(), courseTakenMap);
 
-                if (validCourse) {
-                    currentCourse.setLevel(currentLayer);
-                    courseRepository.save(currentCourse);
+        // * Match all of the non-major courses. But do *not* look for any new courses. Just match ones that are already registered
+        for (int i = 0; i < nonMajorCourses.size(); i++) {
+            Course currentCourse = nonMajorCourses.get(i);
+            // System.out.println("Matching for course: " + currentCourse.getTitle());
+            String prereqString = currentCourse.getPrerequisiteString();
 
-                    coursesTakenThisLevel.add(currentCourse);
-                    removeFromList(i, courses);
-                    i--;
+            List<String> badPhrases = new ArrayList<>(Arrays.asList("or permission of the instructor.", "or permission of instructor.", "or permission", "or permission.", "or equivalent.", "(Computer System Fundamentals)"));
+
+            for (String badPhrase : badPhrases) {
+                if (prereqString.endsWith(badPhrase)) {
+                    prereqString = prereqString.substring(0, prereqString.length() - badPhrase.length()).trim();
                 }
             }
 
-            for (Course course : coursesTakenThisLevel) {
-                courseTakenMap.put(course.getOfferingName(), true);
-            }   
-
-            coursesTakenThisLevel.clear();
-            currentLayer++;
+            PrerequisiteList prereqs = constructPrereqsFromString(prereqString);
+            prerequisiteListRepository.save(prereqs);
+           currentCourse.setPrerequisiteFor(prereqs);
+            courseRepository.save(currentCourse);
         }
     }
 
-    // Constant time method to remove from Course list since order doesn't matter
-    private void removeFromList(int index, List<Course> list) {
+    private void removeCourseFromList(int index, List<Course> list) {
+        // * Order doesn't matter so swap with last and remove for constant-time operation
         list.set(index, list.get(list.size() - 1));
         list.remove(list.size() - 1);
     }
 
-    // Determine if a course can be taken
-    private boolean courseCanBeTaken(PrerequisiteList prereqList, Map<String, Boolean> courseTakenMap) {
+    // TODO: Incorporate information regarding nonMajor courses as well
+    private void setCourseLevels() {
+        Set<String> coursesTakenTemp = new HashSet<>(); // Temporary, only used for getting topological order of courses. NOT THE SAME AS coursesTaken
+
+        // * Loooooooop
+        int currentLevel = 0;
+        while (coursesTakenTemp.size() < courses.size()) {
+            List<String> coursesTakenTempBuffer = new ArrayList<>();
+            boolean coursesAddedThisLevel = false;
+
+            // * Find all courses that can be taken at this level, and 'set' their levels
+            for (int i = 0; i < courses.size(); i++) {
+                Course currentCourse = courses.get(i);
+
+                // * Ignore courses that have already been accounted for in the topo. ordering
+                if (coursesTakenTemp.contains(currentCourse.getOfferingName())) {
+                    continue;
+                }
+
+                // System.out.println("Examining " + currentCourse.getTitle() + "...");
+
+                if (courseCanBeTaken(courses.get(i).getPrerequisiteFor(), coursesTakenTemp)) {
+                    currentCourse.setLevel(currentLevel);
+                    courseRepository.save(currentCourse);
+                    System.out.println(currentCourse.getTitle() + " set to level " + currentLevel);
+                    coursesTakenTempBuffer.add(currentCourse.getOfferingName());
+                    coursesAddedThisLevel = true;
+                } else {
+                    System.out.println(currentCourse.getTitle() + " level could not be set at this time.");
+                }
+            }
+
+            // * Mark all courses in the buffer as "taken" by adding them to coursesTakenTemp
+            for (String courseInBuffer : coursesTakenTempBuffer) {
+                coursesTakenTemp.add(courseInBuffer);
+            }
+
+            // If a course can't be matched, set it to level 0 (i.e. just break because courses are level 0 by default)
+            if (coursesAddedThisLevel == false) {
+                break;
+            }
+
+            // * Increase level
+            currentLevel++;
+        }
+        
+    }
+
+    // TODO
+    private boolean courseCanBeTaken(PrerequisiteList prereqList, Set<String> coursesTakenSet) {
         switch (prereqList.getOperator()) {
             case "NULL":
                 return true;
-            case "UNIT":
-                return courseTakenMap.getOrDefault(prereqList.getUnitString(), false);
+            case "UNIT": 
+                return processUnitList(prereqList, coursesTakenSet);
             case "AND":
                 for (PrerequisiteList list : prereqList.getOperands()) {
-                    if (!courseCanBeTaken(list, courseTakenMap)) {
+                    if (!courseCanBeTaken(list, coursesTakenSet)) {
                         return false;
                     }
-                }
+                }    
                 return true;
             case "OR":
                 for (PrerequisiteList list : prereqList.getOperands()) {
-                    if (courseCanBeTaken(list, courseTakenMap)) {
+                    if (courseCanBeTaken(list, coursesTakenSet)) {
                         return true;
                     }
                 }
-                return false;   
+                return false;
+            default: // ! This should never happen
+                System.out.println("SOMETHING IS VERY WRONG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                return false;
         }
+    }
 
-        // * This line should never be hit
-        return false;
+    private boolean processUnitList(PrerequisiteList list, Set<String> coursesTakenSet) {
+        // * If the unit string matches a course code, need to check if it exists and/or it has been taken. 
+        // * If it does not, just return true
 
+        String unitString = list.getUnitString();
+        if (unitString.matches("^[A-Za-z]{2}\\.[0-9]{3}\\.[0-9]{3}$")) {
+            // return coursesTakenSet.contains(unitString);
+            Mono<Course> currentCourseMono = getCourseInfo(unitString);
+            return (currentCourseMono == null ? true : coursesTakenSet.contains(unitString));
+            // ! May want to change getCourseInfo to throw an exception if the course can't be fetched from the API
+        } else {
+            return false;
+        }
     }
 
 
@@ -182,7 +275,7 @@ public class CourseService {
                 .buildAndExpand(codeAndSection, "Fall 2023");
 
         List<String> badKeyphrases = new ArrayList<>(
-                Arrays.asList("Students", "Credit may only be earned"));
+                Arrays.asList("Student", "Credit may only be earned"));
 
         // List<String> badKeyphrases = new ArrayList<>(
         //         Arrays.asList("Students can", "Students may", "Students can take",
@@ -201,7 +294,13 @@ public class CourseService {
                         try {
                             course.setTitle(jsonNode.get(0).get("Title").asText(""));
                         } catch (NullPointerException e) {
-                            System.out.println("ERROR: COURSE DOES NOT HAVE A TITLE: " + codeAndSectionFull);
+                            // System.out.println("ERROR: COURSE DOES NOT HAVE A TITLE: " + codeAndSectionFull);
+                        }
+
+                        // If a course is graduate-level, ignore it and return NULL
+                        String levelString = jsonNode.get(0).get("Level").asText("");
+                        if (levelString.indexOf("Graduate") != -1 || levelString.indexOf("Independent") != -1) {
+                            return null;
                         }
 
                         course.setOfferingName(codeAndSectionFull);
@@ -216,6 +315,8 @@ public class CourseService {
 
                         if (course.getTitle() != "") {
                             courseRepository.save(course);
+                        } else {
+                            return null;
                         }
 
                         try {
@@ -261,8 +362,15 @@ public class CourseService {
     }
 
 
-    private void handleExternalCourse(Course newCourse) {
-        courseRepository.save(newCourse);        
+    private void handleExternalCourse(String prereqString) {   
+        try {
+            Mono<Course> courseMono = getCourseInfo(prereqString);
+            Course newCourse = courseMono.block();
+            nonMajorCourses.add(newCourse);
+            uniqueCourses.put(prereqString, newCourse);
+        } catch (Exception e) {
+            // System.out.println("lolxd");
+        }
     }
 
     private PrerequisiteList constructPrereqsFromString (String prereqString) {
@@ -301,12 +409,10 @@ public class CourseService {
 
         if (firstAND == -1 && firstOR == -1) {
             //* First check that prereq string is a course code */
-            try {
-                Mono<Course> courseMono = getCourseInfo(prereqString);
-                handleExternalCourse(courseMono.block());
-            } catch (Exception e) {
-                System.out.println("AAAAAAAAAAAAAAAA");
+            if (!uniqueCourses.containsKey(prereqString)) {
+                handleExternalCourse(prereqString);
             }
+        
 
             return new PrerequisiteList(prereqString);
             
@@ -335,6 +441,7 @@ public class CourseService {
     }
 
     private List<String> splitStringIntoTerms(String prereqString, String operator) {
+        // System.out.println("Splitting string: " + prereqString);
         assert(operator == "AND" || operator == "OR");
         List<String> ret = new ArrayList<>();
 
@@ -412,7 +519,13 @@ public class CourseService {
         } else if (course.getTitle().equals("Computer Integrated Surgery I")) {
             course.setPrerequisiteString("EN.601.226 AND (AS.110.201 OR AS.110.212 OR EN.553.291)");
         } else if (course.getTitle().equals("Computer Vision")) {
-            course.setPrerequisiteString("(EN.553.310 OR EN.553.311 OR ((EN.553.420 OR EN.553.421) AND (EN.553.430 OR EN.553.431)) AND (AS.110.201 OR AS.110.212 OR EN.553.291 OR EN.553.295) AND (EN.500.112 OR EN.500.113 OR EN.500.114 OR EN.601.220 OR AS.250.205)");
+            course.setPrerequisiteString("(EN.553.310 OR EN.553.311 OR ((EN.553.420 OR EN.553.421) AND (EN.553.430 OR EN.553.431)) AND (AS.110.201 OR AS.110.212 OR EN.553.291 OR EN.553.295)) AND (EN.500.112 OR EN.500.113 OR EN.500.114 OR EN.601.220 OR AS.250.205)");
+        } else if (course.getOfferingName().equals("EN.601.415")) {
+            course.setTitle("(Advanced) Databases");
+        } else if (course.getTitle().equals("Artificial Intelligence")) {
+            course.setPrerequisiteString("EN.601.226");
+        } else if (course.getTitle().equals("Natural Language Processing")) {
+            course.setPrerequisiteString("EN.601.226");
         }
     }
 
