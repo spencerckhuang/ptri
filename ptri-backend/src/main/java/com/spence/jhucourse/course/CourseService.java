@@ -501,7 +501,7 @@ public class CourseService {
             }
         }
 
-        // This should never happen. Every opening parentheses should have a matching closing one.
+        // This should never happen. Every opening parentheses should have a matching closing one. If this happens, a manual adjustment is probably needed
         return -1;
     }
 
@@ -547,6 +547,7 @@ public class CourseService {
         courseRepository.deleteById(id);
     }
 
+    // ! What is this lol
     public void addJHUCourses() {
 
     }
