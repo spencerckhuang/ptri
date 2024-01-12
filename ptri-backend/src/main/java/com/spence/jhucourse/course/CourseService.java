@@ -79,10 +79,10 @@ public class CourseService {
         System.out.println("Accepting/Denying completed!");
 
         courses = new ArrayList<>(uniqueCourses.values());
-        System.out.println("List of current CS courses:");
-        for (Course course : courses) {
-            System.out.println("\t" + course.getTitle() + " (" + course.getOfferingName() + ")");
-        }
+        // System.out.println("List of current CS courses:");
+        // for (Course course : courses) {
+        //     System.out.println("\t" + course.getTitle() + " (" + course.getOfferingName() + ")");
+        // }
         
 
         System.out.println("Starting course matching...");
@@ -113,10 +113,10 @@ public class CourseService {
 
         System.out.println("Done matching major courses!");
 
-        System.out.println("List of non-major courses collected: ");
-        for (Course course : nonMajorCourses) {
-            System.out.println("\t" + course.getTitle() + " (" + course.getOfferingName() + ")");
-        }
+        // System.out.println("List of non-major courses collected: ");
+        // for (Course course : nonMajorCourses) {
+        //     System.out.println("\t" + course.getTitle() + " (" + course.getOfferingName() + ")");
+        // }
         
         System.out.println("Processing non-major courses...");
         processNonMajorCourses();
@@ -129,8 +129,38 @@ public class CourseService {
 
         System.out.println("Done setting levels!");
 
+        System.out.println("Creating edge data...");
+        
+        setCourseEdges();
+
+
+        System.out.println("Done creating edge data!");
+
         System.out.println("Process complete -- API ready to use :)");
 
+    }
+
+    // TODO: Discern and create edge data by updating Courses' connectingTo lists
+    // * Each Course's connectingTo list should contain a list of offeringNames that should connect to it. These offering names are all VALID offering names present ANYWEHRE in the prerequisite string.
+    private void setCourseEdges() {
+        for (Course course : courses) {
+            getUnitStringsFromPrerequisiteList(course.getPrerequisiteFor(), course.getConnectingTo());
+            courseRepository.save(course);
+        }
+    }
+
+    private void getUnitStringsFromPrerequisiteList(PrerequisiteList list, List<String> connectingList) {
+        switch (list.getOperator()) {
+            case "NULL":
+                return;
+            case "UNIT":
+                connectingList.add(list.getUnitString());
+                return;
+            default:
+                for (PrerequisiteList subList : list.getOperands()) {
+                    getUnitStringsFromPrerequisiteList(subList, connectingList);
+                }
+        }
     }
 
     private void processNonMajorCourses() {
@@ -172,7 +202,6 @@ public class CourseService {
         list.remove(list.size() - 1);
     }
 
-    // TODO: Incorporate information regarding nonMajor courses as well
     private void setCourseLevels() {
         Set<String> coursesTakenTemp = new HashSet<>(); // Temporary, only used for getting topological order of courses. NOT THE SAME AS coursesTaken
 
@@ -196,11 +225,11 @@ public class CourseService {
                 if (courseCanBeTaken(courses.get(i).getPrerequisiteFor(), coursesTakenTemp)) {
                     currentCourse.setLevel(currentLevel);
                     courseRepository.save(currentCourse);
-                    System.out.println(currentCourse.getTitle() + " set to level " + currentLevel);
+                    // System.out.println(currentCourse.getTitle() + " set to level " + currentLevel);
                     coursesTakenTempBuffer.add(currentCourse.getOfferingName());
                     coursesAddedThisLevel = true;
                 } else {
-                    System.out.println(currentCourse.getTitle() + " level could not be set at this time.");
+                    // System.out.println(currentCourse.getTitle() + " level could not be set at this time.");
                 }
             }
 
@@ -220,7 +249,6 @@ public class CourseService {
         
     }
 
-    // TODO
     private boolean courseCanBeTaken(PrerequisiteList prereqList, Set<String> coursesTakenSet) {
         switch (prereqList.getOperator()) {
             case "NULL":
@@ -362,7 +390,17 @@ public class CourseService {
     }
 
 
-    private void handleExternalCourse(String prereqString) {   
+    // This is guaraneed to be a unitString (i.e. a single course name)
+    private void handleExternalCourse(String prereqString) { 
+        if (prereqString.equals("AP Computer Science") && !uniqueCourses.containsKey("APCS") ) {
+            Course newCourse = new Course();
+            newCourse.setOfferingName("APCS");
+            newCourse.setTitle("AP Computer Science");
+            uniqueCourses.put("APCS", newCourse);
+            courseRepository.save(newCourse);
+            return;
+        }
+
         try {
             Mono<Course> courseMono = getCourseInfo(prereqString);
             Course newCourse = courseMono.block();

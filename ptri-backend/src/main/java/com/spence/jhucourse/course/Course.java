@@ -1,8 +1,12 @@
 package com.spence.jhucourse.course;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -27,6 +31,9 @@ public class Course {
 
     private int level;
 
+    @ElementCollection
+    private List<String> connectingTo;
+
     public Course() {
         this.offeringName = "";
         this.title = "";
@@ -34,6 +41,7 @@ public class Course {
         this.prerequisiteString = "";
         this.prerequisiteFor = new PrerequisiteList();
         this.level = 0;
+        this.connectingTo = new ArrayList<>();
     }
 
     public String getOfferingName() {
@@ -82,6 +90,14 @@ public class Course {
 
     public void setLevel (int level) {
         this.level = level;
+    }
+
+    public List<String> getConnectingTo() {
+        return connectingTo;
+    }
+
+    public void setConnectingTo(List<String> connectingTo) {
+        this.connectingTo = connectingTo;
     }
 
 }
