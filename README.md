@@ -7,8 +7,13 @@ Something I noticed was that services such as Degree Audit allowed us to see whi
 - Utilizes Johns Hopkins SIS API to gather course data. After receiving, my backend parses this data for the parts that are most important, and also make the "prerequisite connections".
 - Try for yourself (after deployment, though 😊)! Endpoints:
     - /courses: Returns all processed courses in JSON format
-    - (I will create more soon probably 🙂)
+    - (I will create more soon probably as the project goes on, but for now /courses is the only one being used)
 
-#### Frontend: (havent started yet but will probably be using React Flow to achieve visual effects)
-- Goal is to create a topological graph that can show prerequisite relationships
+#### Frontend:
+- Goal is to create a topological graph that can show prerequisite relationships. Progress so far:
+![image](https://github.com/spencerckhuang/ptri/assets/112358919/bdeb3fd9-8305-4608-84ef-f39ad33f6a6f)
+- Great start and was basically what I was visualizing going into this whole project. Some things that are left to do:
+  1. Resolve minor course-specific issues (e.g. courses on the far right should be in different columns -- arrows should only point forwards)
+  2. Improve styling of course nodes (very basic CSS used for now, just for proof-of-concept)
+  3. *Inclue interactivity: Allow users to select courses they have taken, and show the user what courses they can take based off of the clicked courses*
   
