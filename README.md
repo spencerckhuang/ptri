@@ -15,5 +15,5 @@ Something I noticed was that services such as Degree Audit allowed us to see whi
 - Great start and was basically what I was visualizing going into this whole project. Some things that are left to do:
   1. Resolve minor course-specific issues (e.g. courses on the far right should be in different columns -- arrows should only point forwards)
   2. Improve styling of course nodes (very basic CSS used for now, just for proof-of-concept)
-  3. *Inclue interactivity: Allow users to select courses they have taken, and show the user what courses they can take based off of the clicked courses*
+  3. *Include interactivity: Allow users to select courses they have taken, and show the user what courses they can take based off of the clicked courses*
   
